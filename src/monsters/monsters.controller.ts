@@ -6,35 +6,63 @@ import {
   Param,
   Delete,
   Put,
+  Logger,
 } from '@nestjs/common';
 import { MonstersService } from './monsters.service';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UpdateMonsterDto } from './monster.dto';
 
 @Controller('monsters')
+@ApiTags('Monsters management')
 export class MonstersController {
+  private readonly logger = new Logger(MonstersController.name);
+
   constructor(private readonly monstersService: MonstersService) {}
 
   @Get()
+  @ApiOperation({
+    description: 'Get a monsters list',
+    summary: 'Monsters list',
+  })
+  @ApiOkResponse({
+    // type: any,
+    description: 'A list of all incubated monsters',
+  })
   findAll() {
     return this.monstersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.monstersService.findOne(id);
+  @Get(':code')
+  findOne(@Param('code') code: string) {
+    return this.monstersService.findOne(code);
   }
 
-  @Post()
-  create(@Body() createMonsterDto: any) {
-    return this.monstersService.create(createMonsterDto);
+  @Put(':code')
+  @ApiOperation({
+    description: 'Update a monster',
+    summary: 'Monster update',
+  })
+  @ApiBody({
+    description:
+      "Receive an object with the monster's attributes; the code will be ignored as it cannot be modified.",
+    type: UpdateMonsterDto,
+  })
+  @ApiParam({ name: 'code', description: "Monster's code" })
+  update(
+    @Param('code') code: string,
+    @Body() updateMonsterDto: UpdateMonsterDto,
+  ) {
+    return this.monstersService.update(code, updateMonsterDto);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateMonsterDto: any) {
-    return this.monstersService.update(id, updateMonsterDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.monstersService.remove(id);
+  @Delete(':code')
+  remove(@Param('code') code: string) {
+    return this.monstersService.remove(code);
   }
 }
